@@ -132,7 +132,6 @@ bool validate_instruction(std::string symbol) {
 
 
 
-        std::cout << cur_address << std::endl;
 std::string execute_instruction(std::vector<std::string> row, int k, int skipped, std::map<std::string, int> symbol_table, int mem_start) {
   std::map<std::string, std::function<std::string(std::vector<std::string>, int, int, std::map<std::string, int>, int, std::string, int)>> function_map = {
     {"ADD", &add_and_func},
