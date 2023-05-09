@@ -84,7 +84,11 @@ bool validate_label (std::string label) {
 
 int assemble_and_output () {
   
-  //std::cout << validate_instruction("AND") << std::endl;
+  //std::cout << validate_instruction("NOT") << std::endl;
+  //std::cout << get_reg_code("R3") << std::endl;
+  //return 0;
+  //std::string str = "-1";
+  //std::cout << std::stoi(str, 0, 16) << std::endl;
   //return 0;
 
   std::ifstream file("text.txt");
@@ -100,16 +104,19 @@ int assemble_and_output () {
     int skipped = 0;
     int mem_start = 0;
     int cur_address = 0;
+    int line_num = 0;
 
     //first pass to generate symbol table and break instructions into tokens
     while(std::getline(file, line)) {
-
-
+      
+      line_num++;
+      //std::cout << line << std::endl;
       //std::cout << "here" <<std::endl;
       std::vector<std::string> tokens = line_to_tokens(line);
 
-      if (tokens.size() == 0) { //if empty line or commented
-        skipped += 1;
+      if (tokens.size() == 0) {//if empty line or commented
+        //std::cout << line << std::endl;
+        //skipped += 1;
         continue;
       }
 
@@ -118,58 +125,58 @@ int assemble_and_output () {
       }
 
       if (tokens[0] == ".STRINGZ" || tokens[0] == ".BLKW" || tokens[0] == ".FILL") { //these pseudo-ops need a label
-        error_out(skipped+i, "pseudo-op with no label");
+        error_out(line_num, "pseudo-op with no label");
       }
 
       if (tokens[0] != ".ORIG") {
 
         if (!orig_found) {
-          skipped += 1;
+          //skipped += 1;
           continue;
         }
 
       } else {
         if (orig_found) {
-          error_out(skipped+i, "Duplicate origin");
+          error_out(line_num, "Duplicate origin");
         }
 
 
         //std::cout << tokens.size() << std::endl;
         //std::cout << tokens[0] << std::endl;
         if (tokens.size() < 2) {
-          error_out(i + skipped, "No start value");
+          error_out(line_num, "No start value");
         }
 
-        if (!validate_hex_val(tokens[1])) {
-          error_out(i + skipped, "Start value invalid: need to be in form x0000");
+
+        if(!(tokens[1][0] == 'x' || tokens[1].substr(0, 2) == "0x")) {
+          error_out(line_num, "ORIG value invalid: needs to be in hex form");
         }
 
-        std::string subs = tokens[1].substr(1, tokens[1].length()-1);
-        mem_start = std::stoi(subs, 0, 16);
-        std::cout << mem_start << std::endl;
+        mem_start = get_imm_value(tokens[1]);
+        //std::cout << mem_start << std::endl;
+        //return 0;
         cur_address = mem_start;
         orig_found = true;
-        skipped += 1;
+        //skipped += 1;
         continue;
 
       }
 
-      //this is kinda chalked but if vector[0] = "" then vector[1] holds an ascii if vector[1] = "" then vector[0] holds an interger in string form
 
       if (!validate_instruction(tokens[0])) {
-        std::cout << cur_address << std::endl;
+        //std::cout << cur_address << std::endl;
         if (tokens[0][tokens[0].length()-1] == ':' ) {
           tokens[0] = tokens[0].substr(0, tokens[0].length()-1);
         }
         if (!validate_label(tokens[0])) {
           std::cout << tokens[0] << std::endl;
-          error_out(i+skipped, "Invalid label");
+          error_out(line_num, "Invalid label");
         }
 
         std::vector<std::string> str_vect;
 
-        if (tokens.size() < 3) {
-          error_out(i+skipped, "");
+        if (tokens.size() < 2) {
+          error_out(line_num, "");
         }
         //check if label
         if (tokens[0][tokens[0].length() - 1]  == ':') {
@@ -181,44 +188,48 @@ int assemble_and_output () {
         if (tokens[1] == ".STRINGZ") {
 
           if (tokens[2][0] != '"' || tokens[2][tokens[2].length()-1] != '"') { //checking if not incapsulated in quotes
-            error_out(skipped+i, "Invalid string");
+            error_out(line_num, "Invalid string");
           }
 
           symbol_table[tokens[0]] = cur_address;
           for (int x = 1; x < tokens[2].length()-1; x++) {
             if (!isascii(tokens[2][x])) {
-              error_out(i+skipped, "Invalid character");
+              error_out(line_num, "Invalid character");
             }
             int ascii_code = static_cast<int>(tokens[2][x]);
-            str_vect = {"", std::to_string(ascii_code)};
+            str_vect = {std::to_string(line_num), "", std::to_string(ascii_code)};
             instruction_vect.push_back(str_vect); //.STRINGZ pesudo-op initializes a string in memory
           }
-          str_vect = {"", "0"};
+          str_vect = {std::to_string(line_num), "", "0"};
           instruction_vect.push_back(str_vect);
           cur_address += tokens[2].length()-1;
           i++;
+          if (cur_address > 0xFFFF) {
+            value_range_error(line_num);
+          }
           continue;
         }
 
         if (tokens[1] == ".FILL") {
           int fill_val;
-          if (!validate_hex_val(tokens[2])) {
-            try {
-              fill_val = std::stoi(tokens[2]);
-            } catch (const std::exception& e) {
-              error_out(skipped+i, "Invalid value");
-            }
-          } else {
-            std::string subs = tokens[2].substr(1);
-            fill_val = std::stoi(subs, 0, 16);
+          if (!(tokens[2][0] == '#' || tokens[2][0] == '#' || tokens[2].substr(0, 2) == "0x")) {
+            value_error(line_num);
+          }
+          
+          fill_val = get_imm_value(tokens[2]);
+          if (fill_val > 32767 || fill_val < -32768) {
+
           }
           std::string fill_val_str;
           fill_val_str = std::to_string(fill_val);
           symbol_table[tokens[0]] = cur_address;
-          str_vect = {fill_val_str, ""};
+          str_vect = {std::to_string(line_num), "", fill_val_str};
           instruction_vect.push_back(str_vect);
           i++;
           cur_address++;
+          if (cur_address > 0xFFFF) {
+            value_range_error(line_num);
+          }
           continue;
 
         }
@@ -231,8 +242,8 @@ int assemble_and_output () {
               //std::cout << tokens[2] << std::endl;
               block_count = std::stoi(tokens[2]);
             } catch (const std::exception& e) {
-              error_out(skipped+i, "Invalid valueegegege");
-
+              //error_out(skipped+i, "Invalid valueegegege");
+              value_error(line_num);
             }
           }
           else if (tokens[2][0] == 'x') {
@@ -240,24 +251,36 @@ int assemble_and_output () {
               tokens[2] = tokens[2].substr(2);
               block_count = std::stoi(tokens[2], 0, 16);
             } catch (const std::exception& e) {
-              error_out(skipped+i, "Invalid value");
+              value_error(line_num);
+              //error_out(skipped+i, "Invalid value");
+            }
+          }
+          else if (tokens[2].substr(0, 2) == "0x") {
+            try {
+              block_count = std::stoi(tokens[2], 0, 16);
+            } catch (const std::exception& e) {
+              value_error(line_num);
             }
           }
           else {
             try {
               block_count = std::stoi(tokens[2]);
             } catch (const std::exception& e) {
-              error_out(skipped+i, "Invalid value");
+              value_error(line_num);
+              //error_out(skipped+i, "Invalid value");
             }
           }
           symbol_table[tokens[0]] = cur_address;
           for (int x = 0; x < block_count; x++) {
             //std::cout << "here\n";
-            str_vect = {"0", ""};
+            str_vect = {std::to_string(line_num), "", "0"};
             instruction_vect.push_back(str_vect);
             cur_address++;
           }
           i++;
+          if (cur_address > 0xFFFF) {
+            value_range_error(line_num);
+          }
           continue;
 
         }
@@ -267,7 +290,7 @@ int assemble_and_output () {
         symbol_table[tokens[0]] = cur_address;
         //std::cout << tokens[0] << " " << symbol_table[tokens[0]] << std::endl;
       }
-
+      tokens.insert(tokens.begin(), std::to_string(line_num)); 
       instruction_vect.push_back(tokens);
       cur_address++;
       i++;
@@ -275,52 +298,30 @@ int assemble_and_output () {
         throw std::runtime_error("Address space exceeded");
       }
     }
-    if (instruction_vect.size() == 0) {
+
+    if (!orig_found) {
       error_out(0, "No .ORIG found");
     }
+
     print_map(symbol_table);
-    std::string mach_code = execute_instruction(instruction_vect[0], 0, skipped, symbol_table, mem_start);
-    std::cout << mach_code << std::endl;
-    return 0;
-    //second pass starts to assmeble instructions
-    //first index of the vector is the .ORIG row so we start from index
-    //print_map(symbol_table);
 
+    //std::cout << skipped << std::endl;
 
-    //for (int x = 0; x < instruction_vect.size(); x++) {
-      //std::string line = "";
-      //for (int k = 0; k < instruction_vect[x].size(); k++) {
-        //line += (instruction_vect[x][k] + " ");
-      //}
-      //std::cout << line << std::endl;
-    //}
-    std::vector<std::string> row;
-    int start;
-    std::string opcode;
-
-    std::string d_reg;
-    std::string s_reg;
-
-
+    std::string mach_code;
     for (int k = 0; k < instruction_vect.size(); k++) {
-
-      row = instruction_vect[k];
-      if (validate_instruction(row[0])) {
-        start = 1;
-      } else {
-        start = 0;
-      }
-      std::string token = row[start]; //index of first instruction
-
-
-
-
+      mach_code = execute_instruction(instruction_vect[k], k, symbol_table, mem_start);
+      std::cout << "x" << std::hex << mem_start + k << " " << mach_code << std::endl;
     }
-  }
+
+
+
+  } 
+    
 
   return 0;
 
-}
+}  
+
 
 
 int main () {
