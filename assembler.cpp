@@ -47,7 +47,6 @@ std::vector<std::string> line_to_tokens (std::string line) { //breaks up line in
       }
     }
     token += line[i];
-    //std::cout << token << std::endl;
   }
 
   if (token != "") {
@@ -82,16 +81,10 @@ bool validate_label (std::string label) {
 
 
 
-int assemble_and_output () {
+int assemble_and_output (std::string input_file, std::string output_file) {
   
-  //std::cout << validate_instruction("NOT") << std::endl;
-  //std::cout << get_reg_code("R3") << std::endl;
-  //return 0;
-  //std::string str = "-1";
-  //std::cout << std::stoi(str, 0, 16) << std::endl;
-  //return 0;
 
-  std::ifstream file("text.txt");
+  std::ifstream file(input_file);
   if (file.is_open()) {
 
     std::map<std::string, int> symbol_table;
@@ -110,13 +103,9 @@ int assemble_and_output () {
     while(std::getline(file, line)) {
       
       line_num++;
-      //std::cout << line << std::endl;
-      //std::cout << "here" <<std::endl;
       std::vector<std::string> tokens = line_to_tokens(line);
 
       if (tokens.size() == 0) {//if empty line or commented
-        //std::cout << line << std::endl;
-        //skipped += 1;
         continue;
       }
 
@@ -131,7 +120,6 @@ int assemble_and_output () {
       if (tokens[0] != ".ORIG") {
 
         if (!orig_found) {
-          //skipped += 1;
           continue;
         }
 
@@ -141,8 +129,6 @@ int assemble_and_output () {
         }
 
 
-        //std::cout << tokens.size() << std::endl;
-        //std::cout << tokens[0] << std::endl;
         if (tokens.size() < 2) {
           error_out(line_num, "No start value");
         }
@@ -153,11 +139,8 @@ int assemble_and_output () {
         }
 
         mem_start = get_imm_value(tokens[1]);
-        //std::cout << mem_start << std::endl;
-        //return 0;
         cur_address = mem_start;
         orig_found = true;
-        //skipped += 1;
         continue;
 
       }
@@ -212,7 +195,7 @@ int assemble_and_output () {
 
         if (tokens[1] == ".FILL") {
           int fill_val;
-          if (!(tokens[2][0] == '#' || tokens[2][0] == '#' || tokens[2].substr(0, 2) == "0x")) {
+          if (!(tokens[2][0] == '#' || tokens[2][0] == 'x' || tokens[2].substr(0, 2) == "0x")) {
             value_error(line_num);
           }
           
@@ -239,10 +222,8 @@ int assemble_and_output () {
           if(tokens[2][0] == '#') { //allows for first index to be #
             tokens[2] = tokens[2].substr(1);
             try {
-              //std::cout << tokens[2] << std::endl;
               block_count = std::stoi(tokens[2]);
             } catch (const std::exception& e) {
-              //error_out(skipped+i, "Invalid valueegegege");
               value_error(line_num);
             }
           }
@@ -252,7 +233,6 @@ int assemble_and_output () {
               block_count = std::stoi(tokens[2], 0, 16);
             } catch (const std::exception& e) {
               value_error(line_num);
-              //error_out(skipped+i, "Invalid value");
             }
           }
           else if (tokens[2].substr(0, 2) == "0x") {
@@ -284,11 +264,8 @@ int assemble_and_output () {
           continue;
 
         }
-        //if ()
 
-        //std::cout << "here" <<std::endl;
         symbol_table[tokens[0]] = cur_address;
-        //std::cout << tokens[0] << " " << symbol_table[tokens[0]] << std::endl;
       }
       tokens.insert(tokens.begin(), std::to_string(line_num)); 
       instruction_vect.push_back(tokens);
@@ -303,14 +280,20 @@ int assemble_and_output () {
       error_out(0, "No .ORIG found");
     }
 
-    print_map(symbol_table);
+    //print_map(symbol_table);
 
-    //std::cout << skipped << std::endl;
 
     std::string mach_code;
+    std::ofstream outfile;
+    if (output_file == "") {
+      outfile = std::ofstream("output");
+    } else {
+      outfile = std::ofstream(output_file);
+    }
+
     for (int k = 0; k < instruction_vect.size(); k++) {
       mach_code = execute_instruction(instruction_vect[k], k, symbol_table, mem_start);
-      std::cout << "x" << std::hex << mem_start + k << " " << mach_code << std::endl;
+      outfile << "x" << std::hex << mem_start+k << " " << mach_code << std::endl;
     }
 
 
@@ -324,9 +307,22 @@ int assemble_and_output () {
 
 
 
-int main () {
+int main (int argc, char* argv[]) {
+    
+  if (argc < 2) {
+    std::cerr << "Provide input file name" << std::endl;
+    return 1;
+  }
+  
+  std::string input_file = argv[1];
+  std::string output_file;
+  if (argc == 3) {
+    output_file = argv[2];
+  } else {
+    output_file = "";
+  }
 
-  assemble_and_output();
+  assemble_and_output(input_file, output_file);
 
   return 0;
 }

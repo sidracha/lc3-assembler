@@ -96,7 +96,6 @@ std::vector<int> get_dest_val (std::map<std::string, int> symbol_table, std::str
 }
 
 std::string add_and_not_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
-  //std::cout << "here" << std::endl;
   std::string reg_code;
   
   if (row[start] == "ADD") {
@@ -130,7 +129,6 @@ std::string add_and_not_func (std::vector<std::string> row, int line_num, int k,
     //std::cout << "here" << std::endl;
     int imm = get_imm_value(row[start+3]);
     if (imm > 15 || imm < -16) {
-      //error_out(k+skipped, "Immediate value out of bounds; Needs to be less than 2^5");
       value_range_error(line_num);
     }
     std::bitset<5> b(imm);
@@ -154,7 +152,6 @@ std::string br_func (std::vector<std::string> row, int line_num, int k, std::map
   if (row[start].length() == 2) {
     invalid_instruction_error(line_num);
   } 
-  //std::cout << "here"; 
   mach_code += "0000";
   std::bitset<3> con_codes ("000");
   
@@ -169,7 +166,6 @@ std::string br_func (std::vector<std::string> row, int line_num, int k, std::map
     if (row[start][i] == 'p') {
       con_codes[2] = "1";
     }
-    std::cout << con_codes << std::endl;
 
   }
   mach_code += con_codes.to_string();
@@ -183,12 +179,10 @@ std::string br_func (std::vector<std::string> row, int line_num, int k, std::map
     offset_val = calculate_offset(mem_start, dest_val_vect[1], k);
   }
 
-  //std::cout << offset_val << " " << jump_val <<  " " << mem_start << " " << line << std::endl;
   if (offset_val > 255 || offset_val < -256) {
     offset_val_error(line_num);
   }
   mach_code += int_to_bin9_str(offset_val);
-  //std::cout << bits.to_string() << std::endl;
   return mach_code;
   
 }
@@ -217,10 +211,8 @@ std::string jsr_jsrr_func (std::vector<std::string> row, int line_num, int k, st
     std::vector<int> dest_val_vect = get_dest_val(symbol_table, row[start+1], line_num);
     int dest_val;
     if (dest_val_vect[0] == 0) {
-      //std::cout << "here" << std::endl;
       dest_val = dest_val_vect[1];
     } else {
-      std::cout << "here" << std::endl;
       dest_val = calculate_offset(mem_start, dest_val_vect[1], k);
       std::cout << dest_val << std::endl;
     }
@@ -408,10 +400,7 @@ std::string execute_instruction(std::vector<std::string> row, int k, std::map<st
   if (row[1] == "") { //ascii character
     token = "FILL";
   }
-  //std::cout << token << std::endl;
-  //std::cout << validate_instruction(token) << std::endl;
   if (!validate_instruction(token)) {
-    //std::cout << "here" << std::endl;
     invalid_instruction_error(line_num);
   }
   if (token.substr(0, 2) == "BR") {
