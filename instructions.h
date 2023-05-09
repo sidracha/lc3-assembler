@@ -153,20 +153,18 @@ std::string br_func (std::vector<std::string> row, int line_num, int k, std::map
     invalid_instruction_error(line_num);
   } 
   mach_code += "0000";
-  std::bitset<3> con_codes ("000");
-  
+  std::bitset<3> con_codes;
   for (int i = 2; i < row[start].length(); i++) {
     
     if (row[start][i] == 'n') {
-      con_codes[0] = "1";
+      con_codes.set(2);
     }
     if (row[start][i] == 'z') {
-      con_codes[1] = "1";
+      con_codes.set(1);
     }
     if (row[start][i] == 'p') {
-      con_codes[2] = "1";
+      con_codes.set(0);
     }
-
   }
   mach_code += con_codes.to_string();
   
