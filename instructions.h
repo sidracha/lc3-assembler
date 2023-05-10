@@ -389,7 +389,6 @@ std::string execute_instruction(std::vector<std::string> row, int k, std::map<st
   };
   int line_num = std::stoi(row[0]);
   int start = 1;
-
   if (!validate_instruction(row[1])) {
     start = 2;
   }
@@ -398,7 +397,7 @@ std::string execute_instruction(std::vector<std::string> row, int k, std::map<st
   if (row[1] == "") { //ascii character
     token = "FILL";
   }
-  if (!validate_instruction(token)) {
+  if (!validate_instruction(token) && token != "FILL") {
     invalid_instruction_error(line_num);
   }
   if (token.substr(0, 2) == "BR") {
