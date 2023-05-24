@@ -5,7 +5,7 @@ chmod +x assemble.sh && ./assemble.sh [input file] [output file]
 
 OR
 
-g++ (or whatver compiler) assembler.cpp instructions.cpp
+g++ (or whatver compiler) src/assembler.cpp src/instructions.cpp
 
 
 
