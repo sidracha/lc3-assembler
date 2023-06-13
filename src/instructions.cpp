@@ -37,7 +37,7 @@ void invalid_vector_error(int line_num) {
 }
 
 
-std::string get_reg_code (std::string reg) { //returns binary string of register code or "" if not valid code
+static std::string get_reg_code (std::string reg) { //returns binary string of register code or "" if not valid code
   std::regex regex("^R[0-7]$");
   if (std::regex_match(reg, regex)) {
     std::string x = reg.substr(1);
@@ -49,16 +49,16 @@ std::string get_reg_code (std::string reg) { //returns binary string of register
 
 }
 
-int calculate_offset(int mem_start, int dest_address, int k) {
+static int calculate_offset(int mem_start, int dest_address, int k) {
   return dest_address - (mem_start + k) - 1; //imcremented PC + offset
 }
 
-std::string int_to_bin9_str (int num) {
+static std::string int_to_bin9_str (int num) {
   std::bitset<9> b(num);
   return b.to_string();
 }
 
-bool key_exists (std::map<std::string, int> map, std::string key) {
+static bool key_exists (std::map<std::string, int> map, std::string key) {
   if (!map.count(key)) {
     return false;
   }
@@ -80,7 +80,7 @@ int get_imm_value (std::string val) {
 }
 
 
-std::vector<int> get_dest_val (std::map<std::string, int> symbol_table, std::string token, int line_num) {
+static std::vector<int> get_dest_val (std::map<std::string, int> symbol_table, std::string token, int line_num) {
   std::vector<int> return_vect; //if immediate, 0, if symbol, 1
   if (!(token[0] == '#' || token[0] == 'x' || token.substr(0, 2) == "0x")) {
     if (!(key_exists(symbol_table, token))) {
@@ -95,7 +95,7 @@ std::vector<int> get_dest_val (std::map<std::string, int> symbol_table, std::str
   return return_vect;
 }
 
-std::string add_and_not_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string add_and_not_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   std::string reg_code;
   
   if (row[start] == "ADD") {
@@ -148,7 +148,7 @@ std::string add_and_not_func (std::vector<std::string> row, int line_num, int k,
   
 }
 
-std::string br_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string br_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   if (row[start].length() == 2) {
     invalid_instruction_error(line_num);
   } 
@@ -185,7 +185,7 @@ std::string br_func (std::vector<std::string> row, int line_num, int k, std::map
   
 }
 
-std::string jmp_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string jmp_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   if (row.size() > 4) {
     invalid_instruction_error(line_num);
   }
@@ -201,7 +201,7 @@ std::string jmp_func (std::vector<std::string> row, int line_num, int k, std::ma
   return mach_code;
 }
 
-std::string jsr_jsrr_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string jsr_jsrr_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   
 
   mach_code += "0100";
@@ -232,7 +232,7 @@ std::string jsr_jsrr_func (std::vector<std::string> row, int line_num, int k, st
 
 }
 
-std::string ld_ldi_lea_st_sti_func (std::vector<std::string> row, int line_num, int k,  std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string ld_ldi_lea_st_sti_func (std::vector<std::string> row, int line_num, int k,  std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   std::map<std::string, std::string> code_map = {
     {"LD", "0010"},
     {"LDI", "1010"},
@@ -262,7 +262,7 @@ std::string ld_ldi_lea_st_sti_func (std::vector<std::string> row, int line_num, 
   return mach_code;
 }
 
-std::string ret_rti_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string ret_rti_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   
   if (row[start] == "RET") {
     mach_code += "1100";
@@ -274,7 +274,7 @@ std::string ret_rti_func (std::vector<std::string> row, int line_num, int k, std
   return mach_code;
 }
 
-std::string ldr_str_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string ldr_str_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   
 
   int offset;
@@ -315,7 +315,7 @@ std::string ldr_str_func (std::vector<std::string> row, int line_num, int k, std
 
 }
 
-std::string trap_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string trap_func (std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   
   int vector_int;
   std::vector vect = get_dest_val(symbol_table, row[start+1], line_num);
@@ -339,7 +339,7 @@ std::string trap_func (std::vector<std::string> row, int line_num, int k, std::m
 }
 
 
-std::string fill_func(std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string fill_func(std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   
   int num = std::stoi(row[2]);
   if (num > 0xFFFF) {
@@ -350,7 +350,7 @@ std::string fill_func(std::vector<std::string> row, int line_num, int k, std::ma
 
 }
 
-std::string halt_func(std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
+static std::string halt_func(std::vector<std::string> row, int line_num, int k, std::map<std::string, int> symbol_table, int start, std::string mach_code, int mem_start) {
   std::string trap_vect = "0x25";
   row.push_back(trap_vect);
   mach_code = trap_func(row, line_num, k, symbol_table, start, mach_code, mem_start);
