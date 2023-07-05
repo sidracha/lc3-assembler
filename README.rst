@@ -14,3 +14,5 @@ Run
     $ ./assemble.sh [input file] [output file]
 
 or you can compile it yourself. Make sure to compile both assembler.cpp and instructions.cpp.
+
+The outfile takes 2 runtime arguments: the input assembly file and the ouput file where the machine code will be written to.
