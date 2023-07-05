@@ -1,24 +1,15 @@
-# lc3-assembler
+#lc3-assembler
 
+This is an assembler for the LC-3 Instruction Set Architecture and it's associated assembly language
 
-To run:
+Usage
+-----
+
+Run
 
 .. code-block:: text
 
+    $ chmod +x assemble.sh
+    $ ./assemble.sh [input file] [output file]
 
-To run:
-chmod +x assemble.sh && ./assemble.sh [input file] [output file]
-
-OR
-
-g++ (or whatver compiler) src/assembler.cpp src/instructions.cpp
-
-
-
-
-./a.out [input file] [output file] (default is output)
-
-
-
-
-cat[output file]
+or you can compile it yourself. Make sure to compile both assembler.cpp and instructions.cpp.
