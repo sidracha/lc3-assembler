@@ -1,4 +1,5 @@
-#lc3-assembler
+lc-3 Assembler
+==============
 
 This is an assembler for the LC-3 Instruction Set Architecture and it's associated assembly language
 
