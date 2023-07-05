@@ -1,5 +1,11 @@
 # lc3-assembler
 
+
+To run:
+
+.. code-block:: text
+
+
 To run:
 chmod +x assemble.sh && ./assemble.sh [input file] [output file]
 
