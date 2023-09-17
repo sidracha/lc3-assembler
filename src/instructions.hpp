@@ -16,5 +16,5 @@ void invalid_vector_error(int line_num);
 int get_imm_value(std::string val);
 bool validate_instruction(std::string symbol);
 
-std::string execute_instruction(std::vector<std::string> row, int k, std::map<std::string, int> symbol_table, int mem_start);
+int execute_instruction(std::vector<std::string> row, int k, std::map<std::string, int> symbol_table, int mem_start);
 #endif

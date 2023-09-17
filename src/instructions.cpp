@@ -365,7 +365,7 @@ bool validate_instruction(std::string symbol) {
 
 
 
-std::string execute_instruction(std::vector<std::string> row, int k, std::map<std::string, int> symbol_table, int mem_start) {
+int execute_instruction(std::vector<std::string> row, int k, std::map<std::string, int> symbol_table, int mem_start) {
   std::map<std::string, std::function<std::string(std::vector<std::string>, int, int, std::map<std::string, int>, int, std::string, int)>> function_map = {
     {"ADD", &add_and_not_func},
     {"AND", &add_and_not_func},
@@ -406,6 +406,8 @@ std::string execute_instruction(std::vector<std::string> row, int k, std::map<st
 
 
   auto func = function_map[token];
-  std::string result = func(row, line_num, k, symbol_table, start, "", mem_start);
+  int result = std::stoi(func(row, line_num, k, symbol_table, start, "", mem_start), 0, 2);
+	//std::cout << result << std::endl;
+	
   return result;
 }

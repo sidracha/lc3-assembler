@@ -5,9 +5,9 @@
 #include <regex>
 #include <cstdlib>
 #include <ctype.h>
+#include <math.h>
 
 #include "instructions.hpp"
-
 
 
 std::vector<std::string> line_to_tokens (std::string line) { //breaks up line into tokens
@@ -101,7 +101,7 @@ int assemble_and_output (std::string input_file, std::string output_file) {
 
     //first pass to generate symbol table and break instructions into tokens
     while(std::getline(file, line)) {
-      
+     	std::cout << line << std::endl; 
       line_num++;
       std::vector<std::string> tokens = line_to_tokens(line);
 
@@ -239,7 +239,8 @@ int assemble_and_output (std::string input_file, std::string output_file) {
             try {
               block_count = std::stoi(tokens[2], 0, 16);
             } catch (const std::exception& e) {
-              value_error(line_num);
+
+							value_error(line_num);
             }
           }
           else {
@@ -283,7 +284,7 @@ int assemble_and_output (std::string input_file, std::string output_file) {
     //print_map(symbol_table);
 
 
-    std::string mach_code;
+    int mach_code;
     std::ofstream outfile;
     if (output_file == "") {
       outfile = std::ofstream("output");
@@ -293,7 +294,8 @@ int assemble_and_output (std::string input_file, std::string output_file) {
 
     for (int k = 0; k < instruction_vect.size(); k++) {
       mach_code = execute_instruction(instruction_vect[k], k, symbol_table, mem_start);
-      outfile << "x" << std::hex << mem_start+k << " " << mach_code << std::endl;
+     
+			outfile << "x" << std::hex << mem_start+k << " " << mach_code << std::endl;
     }
 
 
@@ -305,9 +307,10 @@ int assemble_and_output (std::string input_file, std::string output_file) {
 }  
 
 
-
 int main (int argc, char* argv[]) {
-    
+  
+
+
   if (argc < 2) {
     std::cerr << "Provide input file name" << std::endl;
     return 1;
